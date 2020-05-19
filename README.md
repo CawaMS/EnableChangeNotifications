@@ -10,15 +10,37 @@ The following steps explain how to enable change notifications private preview o
 * [Create a Log Analytics workspace in the Azure portal](https://docs.microsoft.com/en-us/azure/azure-monitor/learn/quick-create-workspace)
 
 ## Enable notifications
-* Download this script //TODO
-* Edit the following parameters:
+* Download this script
+    * Clone this repository to get [ChangeNotifications.ps1](https://github.com/CawaMS/EnableChangeNotifications/blob/master/ChangeNotifications.ps1)
+* Obtain values for the following parameters from your Azure subscription and Log Analytics workspace
     * Subscription ID
     * Workspace ID
+        * Go to Log Analytics workspace. Choose Properties Menu item and copy workspace ID. See **Figure 1**
     * Workspace resource ID
+        * Go to Log Analytics workspace. Choose Properties Menu item and copy workspace ID. See **Figure 1**
+    
+    **Figure 1: Get workspace properties**
+    ![Workspace Properties](./media/workspace-properties.png)
+
     * Location
+        * Use the location for your Log Analytics workspace
     * ‘Include change details’ – anyone who has READ access to the workspace may potentially see sensitive information (the old/new value. i.e. connection string) for the workspace
     * Enable/Disable notifications
 * Run the script
+    * Launch a PowerShell command prompt
+    * Login to your Azure account
+    ```
+    Connect-AzAccount
+    ```
+    *  *(Optional)* select your Azure subscription
+    ```
+    $context = Get-AzSubscription -SubscriptionId <your_subscriptionId>
+    Set-AzContext $context
+    ```
+    * Use the parameters obtained above to run the script
+    ```
+    .\ChangeNotifications.ps1  -SubscriptionId <your_subscriptionId>  -ActivationState Enabled -IncludeChangeDetails Include -WorkspaceId <your_workspaceId> -WorkspaceResourceId "<your_resourceId_keepTheDoubleQuotes>"  -Location <your_location>
+    ```
 
 ## Test the notification
 * Make a change by adding a slot to your web app
