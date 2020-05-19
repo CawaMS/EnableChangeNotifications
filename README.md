@@ -20,6 +20,7 @@ The following steps explain how to enable change notifications private preview o
         * Go to Log Analytics workspace. Choose Properties Menu item and copy workspace ID. See **Figure 1**
     
     **Figure 1: Get workspace properties**
+    
     ![Workspace Properties](./media/workspace-properties.png)
 
     * Location
