@@ -13,20 +13,20 @@ The following steps explain how to enable change notifications private preview o
 * Download this script
     * Clone this repository to get [ChangeNotifications.ps1](https://github.com/CawaMS/EnableChangeNotifications/blob/master/ChangeNotifications.ps1)
 * Obtain values for the following parameters from your Azure subscription and Log Analytics workspace
-    * Subscription ID
-    * Workspace ID
+    * **Subscription ID**
+    * **Workspace ID**
         * Go to Log Analytics workspace. Choose Properties Menu item and copy workspace ID. See **Figure 1**
-    * Workspace resource ID
+    * **Workspace resource ID**
         * Go to Log Analytics workspace. Choose Properties Menu item and copy workspace ID. See **Figure 1**
     
     **Figure 1: Get workspace properties**
 
     ![Workspace Properties](./media/workspace-properties.png)
 
-    * Location
+    * **Location**
         * Use the location for your Log Analytics workspace
-    * IncludeChangeDetails – anyone who has READ access to the workspace may potentially see sensitive information (the old/new value. i.e. connection string) for the workspace from the old/new values field. Including the details in the change event will enable you to view it in the alert itself. Otherwise you can use the deep link property in the change event to view the old/new values in Application Change Analysis service. 
-    * Enable/Disable notifications
+    * **IncludeChangeDetails** – anyone who has READ access to the workspace may potentially see sensitive information (the old/new value. i.e. connection string) for the workspace from the old/new values field. Including the details in the change event will enable you to view it in the alert itself. Otherwise you can use the deep link property in the change event to view the old/new values in Application Change Analysis service. 
+    * **Enable/Disable notifications**
 * Run the script
     * Launch a PowerShell command prompt
     * Login to your Azure account
