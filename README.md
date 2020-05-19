@@ -20,7 +20,7 @@ The following steps explain how to enable change notifications private preview o
         * Go to Log Analytics workspace. Choose Properties Menu item and copy workspace ID. See **Figure 1**
     
     **Figure 1: Get workspace properties**
-    
+
     ![Workspace Properties](./media/workspace-properties.png)
 
     * Location
@@ -45,8 +45,13 @@ The following steps explain how to enable change notifications private preview o
 
 ## Test the notification
 * Make a change by adding a slot to your web app
-* Go to the Log Analytics workspace. You should see MicrosoftChangeAnalysis_ChangeEvent_CL under Custom Logs. Run a query to see results
-<TODO: screenshot>
+* Go to the Log Analytics workspace. You should see **MicrosoftChangeAnalysis_ChangeEvent_CL** under Custom Logs. Run a query to see results
+
+    **Figure 2: view change events in Log Analytics workspace**
+
+    ![View change events in Log Analytics](./media/custom-logs.png)
+
+
 * Go to Alerts and configure a custom log alert on change. Refer to [Create, view, and manage log alerts using Azure Monitor](https://docs.microsoft.com/en-us/azure/azure-monitor/platform/alerts-log)
     * Based on if configured ‘include change details’, user can either see the old/new value or click on deep link
 
