@@ -38,7 +38,7 @@ The following steps explain how to enable change notifications private preview o
     $context = Get-AzSubscription -SubscriptionId <your_subscriptionId>
     Set-AzContext $context
     ```
-    * Use the parameters obtained above to run the script
+    * Use the parameters obtained above to run the script. You may have to set execution policy. Please refer to [About Execution Policies](https:/go.microsoft.com/fwlink/?LinkID=135170)
     ```
     .\ChangeNotifications.ps1  -SubscriptionId <your_subscriptionId>  -ActivationState Enabled -IncludeChangeDetails Include -WorkspaceId <your_workspaceId> -WorkspaceResourceId "<your_resourceId_keepTheDoubleQuotes>"  -Location <your_location>
     ```
