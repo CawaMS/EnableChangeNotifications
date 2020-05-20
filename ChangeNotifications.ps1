@@ -87,10 +87,10 @@ param (
 )
 
 Write-Host "`nExecuting script to enable/disable notifications for subscription '$SubscriptionId'."
-Write-Host "The events will be sent to:"
-Write-Host "Workspace Id = '$WorkspaceId'"
-Write-Host "Workspace ResourceId = '$WorkspaceResourceId'"
-Write-Host "Sending of notifications changes will be '$ActivationState'"
+Write-Host "The Azure Monitor Workspace details:"
+Write-Host "The specified Workspace Id = '$WorkspaceId'"
+Write-Host "The specified Workspace ResourceId = '$WorkspaceResourceId'"
+Write-Host "The change notifications  feature will be : '$ActivationState'"
 Write-Host "Include change details property is set to '$IncludeChangeDetails' change details in event payload.`n"
 
 
@@ -147,11 +147,10 @@ function CheckRequiredFeatureFlag() {
     return $true;
   }
   else {
-    Write-Host "Notficiations Private Preview Feature flag NOT registered, please send email to changeanalysishelp@microsoft.com with a list of your subscription ids to onboard. The approval is manual at this point since it's a private preview."
+    Write-Host "The notficiations private preview feature flag is not registered, please send email to changeanalysishelp@microsoft.com with a list of your subscription ids to onboard. The approval is manual at this point since it's a private preview."
     return $false;
   }
 }
-
 
 #
 # Method: Registers Microsoft.ChangeAnalysis 
@@ -203,10 +202,10 @@ function CreateCustomRoleDefinition() {
   return $role
 }
 
-
+#
 # Custom role definition is recreated for each subscription, because assignable scope of custom roles is subscription level
 # Role definition contains same list of allowed actions
-
+#
 function AddCustomRoleDefinition() {
 
   Write-Host "Checking whether custom role definition is already registered."
@@ -228,6 +227,9 @@ function AddCustomRoleDefinition() {
   }
 }
 
+#
+# Method assigned custom role to a specified service principal.
+#
 function AddCustomRoleToServicePrincipal($servicePrincipal) {
   
   Write-Host "Check whether required custom role is already assigned to managed identity service principal 'servicePrincipal'"
@@ -242,7 +244,7 @@ function AddCustomRoleToServicePrincipal($servicePrincipal) {
   $roleDefinition = Get-AzRoleDefinition -Name $CustomRoleDefinitionName
 
   if (!$? -or $null -eq $roleDefinition) {
-    Write-Host "Failed to retrieve custom role definition with name = '$CustomRoleDefinitionName' from subscription $subscriptionId"
+    Write-Error "Failed to retrieve custom role definition with name = '$CustomRoleDefinitionName' from subscription $subscriptionId"
     return $false
   }
 
@@ -314,11 +316,11 @@ function Main() {
 
   Write-Host "Selecting subscription ..."
 
-  if (!$subscriptionId) {
-    $subscriptionId = (Get-AzContext).Subscription.Id
+  if (!$SubscriptionId) {
+    $SubscriptionId = (Get-AzContext).Subscription.Id
   }
   else {
-    Get-AzSubscription -SubscriptionId $subscriptionId | Set-AzContext
+    Get-AzSubscription -SubscriptionId $SubscriptionId | Set-AzContext
   }
 
   if (!$?) {
@@ -356,24 +358,23 @@ function Main() {
     $response = CreateOrUpdateConfigurationProfile "PUT" $EmptyProfile
 
     if ($response -eq "Error") {
-      Write-Host "Failed to create configuration profile, aborting."
+      Write-Error "Failed to create configuration profile, aborting."
       Exit
     }
   }
   elseif ($response -eq "Error") {
-    Write-Host "Failed to check if notifications configuration profile already registered with subscription."
+    Write-Error "Failed to check if notifications configuration profile already registered with subscription."
     Exit
   }
   else {
-    Write-Host "Notifications configuration profile already exists for current subscription."
+    Write-Host "Notifications configuration profile already exists for current subscription.`n"
   }
 
-  Write-Host
   $servicePrincipalToAssign = $response.identity.principalId
 
   Write-Host "`nAzure Application Change Analysis Notifications Profile Managed Identity '$servicePrincipalToAssign' `n"
-
   Write-Host "Creating custom role definition to access workspace 'WorkspaceResourceId'shared keys"
+
   $CustomRoleDefinitionName = "$CustomRoleDefinitionName $SubscriptionId"
 
   AddCustomRoleDefinition
@@ -381,7 +382,7 @@ function Main() {
   Write-Host
 
   if ( (AddCustomRoleToServicePrincipal $servicePrincipalToAssign) -eq $false) {
-    Write-Host "There was error to assign role to managed identity service principal."
+    Write-Error "There was error to assign role to managed identity service principal."
     Exit
   }
 
