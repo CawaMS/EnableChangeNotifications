@@ -8,7 +8,7 @@ The script executes fololowing procedures in order:
  1. Registers Microsoft.ChangeAnalysis resource provider if it's not registered.
  2. Checks whether private preview feature flag is enlisted in the specified subscription and exits if not.
  3. Checks if change notifications configuration profile already exists, and if not creates a new one. It extracts managed identity service principal from identity tag of the profile. This service principal will be accessing workspace to get shared keys.
- 4. Checks and creates custom role with 2 required actions to access shared keys from workspace.
+ 4. Checks and creates custom role with 2 required actions to access shared keys from workspace scoped for WorkspaceSubscriptionId.
  5. Checks and assigns custom role definition from #4 to managed identity service principal from #3 and scope is WorkspaceResourceId. 
  6. Updates change configuration profile with details of the workspace.  
 
@@ -17,6 +17,9 @@ The subscription guid to enable change notifications for. If nothing is specifie
 
 .PARAMETER WorkspaceId
 The workspace Id GUID. Can be found in the Azure Monitor Workspace -> Properties blade.
+
+.PARAMETER WorkspaceSubscriptionId
+The workspace subscription Id GUID. Can be found in the Azure Monitor Workspace -> Properties blade.
 
 .PARAMETER WorkspaceResourceId
 The full ARM Azure Monitor Workspace Id that should look like : "/subscriptions/{SubscriptionID}/resourcegroups/{ResourceGroupName}/providers/microsoft.operationalinsights/workspaces/{AzureMonitorWorkspaceName}"
@@ -68,6 +71,8 @@ param (
     })]
   [string] $WorkspaceId = $null,
   
+  [string] $WorkspaceSubscriptionId = $null,
+  
   [Parameter(Mandatory)]
   [ValidateNotNullOrEmpty()]
   [string] $WorkspaceResourceId = $null,
@@ -86,13 +91,24 @@ param (
   [string] $Location = "eastus"
 )
 
+
+# In case workspace subscription Id is not specified, defer to onboarded subsription id.
+if ([string]::IsNullOrEmpty($WorkspaceSubscriptionId)){
+	
+	$WorkspaceSubscriptionId = $SubscriptionId
+	if (! $WorkspaceResourceId.Contains($WorkspaceSubscriptionId)){
+		Write-Error "Ensure specified WorkspaceResourceId = $WorkspaceResourceId is defined in specified WorkspaceSubscriptionId = $WorkspaceSubscriptionId"
+		Exit
+	}
+}
+
 Write-Host "`nExecuting script to enable/disable notifications for subscription '$SubscriptionId'."
 Write-Host "The Azure Monitor Workspace details:"
+Write-Host "The specified Workspace Subscription Id = '$WorkspaceSubscriptionId'"
 Write-Host "The specified Workspace Id = '$WorkspaceId'"
 Write-Host "The specified Workspace ResourceId = '$WorkspaceResourceId'"
 Write-Host "The change notifications  feature will be : '$ActivationState'"
 Write-Host "Include change details property is set to '$IncludeChangeDetails' change details in event payload.`n"
-
 
 #####################################
 # Global definitions:
@@ -104,8 +120,8 @@ $ResourceProviderNamespace = "Microsoft.ChangeAnalysis"
 # Private feature
 $RequiredFeatureName = "NotificationsPrivatePreview"
 
-# Custom role name prefix, it should be appended by subscription id.
-$CustomRoleDefinitionName = "Azure Application Change Analysis Workspace Access Role for "
+# Custom role definition name
+$CustomRoleDefinitionName = "Azure Application Change Analysis Workspace Access Role $WorkspaceSubscriptionId"
 
 # Initial notifications configuration profile
 $EmptyProfile = @{
@@ -188,16 +204,23 @@ function CheckAndRegisterProvider() {
 }
 
 function CreateCustomRoleDefinition() {
+
   $role = [Microsoft.Azure.Commands.Resources.Models.Authorization.PSRoleDefinition]::new()
   $role.Name = $CustomRoleDefinitionName
   $role.Description = 'Microsoft.ChangeAnalysis Provider notifications configuration profile access role to Azure Monitor Workspace to query shared keys'
   $role.IsCustom = $true
-  $perms = 'Microsoft.OperationalInsights/workspaces/sharedKeys/action', 'Microsoft.OperationalInsights/workspaces/read'
+  $perms = 'Microsoft.OperationalInsights/workspaces/sharedKeys/action', 'Microsoft.OperationalInsights/workspaces/sharedKeys/read', 'Microsoft.OperationalInsights/workspaces/read' , 'Microsoft.OperationalInsights/workspaces/listKeys/action'
   $role.Actions = $perms
-  $subs = "/subscriptions/$subscriptionId"
+  
+  $subs = "/subscriptions/$WorkspaceSubscriptionId"
+ 
+  if ($WorkspaceSubscriptionId -ne $SubscriptionId) {
+	$subs = "/subscriptions/$WorkspaceSubscriptionId", "/subscriptions/$SubscriptionId"
+  }
+  
   $role.AssignableScopes = $subs
-
-  Write-Host "Creating custom role to access Azure Monitor Workspace: [" + ($role).Name + "] for scope $subs"
+  
+  Write-Host "Composing a custom role definition object to access Azure Monitor Workspace. The role name: '$($role.Name)' and scope '$subs'"
 
   return $role
 }
@@ -208,7 +231,7 @@ function CreateCustomRoleDefinition() {
 #
 function AddCustomRoleDefinition() {
 
-  Write-Host "Checking whether custom role definition is already registered."
+  Write-Host "Checking whether custom role definition with name '$CustomRoleDefinitionName' is already registered."
 
   $customRoleDefinition = Get-AzRoleDefinition -Name $CustomRoleDefinitionName
 
@@ -217,7 +240,7 @@ function AddCustomRoleDefinition() {
     $definition = New-AzRoleDefinition -Role $role
 
     if ($? -and $null -ne $definition) {
-      Write-Host "New custom role definition is added with id $definition.Id"
+      Write-Host "New custom role definition is added with id $($definition.Id)"
       return
     }
     Write-Host "Failed to setup custom role definition, exiting..."   
@@ -232,7 +255,7 @@ function AddCustomRoleDefinition() {
 #
 function AddCustomRoleToServicePrincipal($servicePrincipal) {
   
-  Write-Host "Check whether required custom role is already assigned to managed identity service principal 'servicePrincipal'"
+  Write-Host "Check whether required custom role is already assigned to managed identity service principal '$servicePrincipal'"
 
   $assignment = Get-AzRoleAssignment -ObjectId $servicePrincipal -RoleDefinitionName $CustomRoleDefinitionName
 
@@ -373,9 +396,7 @@ function Main() {
   $servicePrincipalToAssign = $response.identity.principalId
 
   Write-Host "`nAzure Application Change Analysis Notifications Profile Managed Identity '$servicePrincipalToAssign' `n"
-  Write-Host "Creating custom role definition to access workspace 'WorkspaceResourceId'shared keys"
-
-  $CustomRoleDefinitionName = "$CustomRoleDefinitionName $SubscriptionId"
+  Write-Host "Going to check and create (if needed) a custom role definition to access workspace '$WorkspaceResourceId' shared keys"
 
   AddCustomRoleDefinition
 

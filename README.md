@@ -1,6 +1,6 @@
 # Enable Change Notifications Private Preview - Application Change Analysis
 
-The following steps explain how to enable change notifications private preview on your Azure subscription and how to configure an Azure Monitor alert on specific changes.
+The following steps explain how to enable change notifications private preview on your Azure subscription and how to configure an Azure Monitor alert on specific changes. This private preview is part of the [Application Change Analysis feature in Azure Monitor](https://docs.microsoft.com/en-us/azure/azure-monitor/app/change-analysis). 
 
 ## Pre-requisites
 * You should have an Azure subscription. 
