@@ -5,7 +5,7 @@ The following steps explain how to enable change notifications private preview o
 ## Pre-requisites
 * You should have an Azure subscription. 
     * [Create your Azure free account today](https://azure.microsoft.com/en-us/free/)
-* Email changeanalysishelp@microsoft.com with your subscription ID to enable notifications
+* Email changeanalysisteam@microsoft.com with your subscription ID to enable notifications
 * [Install Azure PowerShell Az module](https://docs.microsoft.com/en-us/powershell/azure/new-azureps-module-az?view=azps-3.8.0#upgrade-to-az)
 * [Create a Log Analytics workspace in the Azure portal](https://docs.microsoft.com/en-us/azure/azure-monitor/learn/quick-create-workspace)
 
