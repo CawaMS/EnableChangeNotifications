@@ -1,4 +1,10 @@
-**Update 2024-04-11: This page is left as a reference for how Change Analysis Change Notification Preview users could use change data for setting up alerts with Azure Monitor. We recommend all Azure users to use Azure Monitor's native support for querying the Resource Graph for alert queries on resource change data. See the [annoucement blog](https://techcommunity.microsoft.com/t5/azure-observability-blog/query-azure-resource-graph-from-azure-monitor/ba-p/3918298) and [official documentation](https://learn.microsoft.com/en-us/azure/azure-monitor/logs/azure-monitor-data-explorer-proxy) for more information.**
+### Update 2024-04-11
+This page serves as a reference for how Change Analysis Change Notification private preview users could use change data for setting up alerts with Azure Monitor. We recommend using Azure Monitor's native support for querying the Resource Graph for resource change data alerts. 
+
+For more information, see the [announcement blog](https://techcommunity.microsoft.com/t5/azure-observability-blog/query-azure-resource-graph-from-azure-monitor/ba-p/3918298) and [official documentation](https://learn.microsoft.com/en-us/azure/azure-monitor/logs/azure-monitor-data-explorer-proxy).
+
+--- 
+
 
 The following query is an example that looks at VM SKU changes that would incur cost to the subscription. Use the query to configure Azure Monitor Custom Log Alerts. Learn more about how to configure alerts based on logs at [Create, view, and manage log alerts using Azure Monitor](https://docs.microsoft.com/en-us/azure/azure-monitor/platform/alerts-log)
 
